@@ -1,5 +1,0 @@
-org.springframework.boot.env.EnvironmentPostProcessor=\
-com.chieh.config.client.github.GitHubConfigEnvironmentPostProcessor
-
-org.springframework.context.ApplicationListener=\
-com.chieh.config.client.github.GitHubConfigApplicationListener
