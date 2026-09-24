@@ -207,7 +207,7 @@ remote set, later files in `paths` override earlier ones.
 | `EnableChiehConfig`                      | The annotation that turns the client on                 |
 | `GitHubConfigEnvironmentPostProcessor`   | Eager stage — loads before Logback                      |
 | `GitHubConfigApplicationListener`        | Lazy stage — loads after logging is up                  |
-| `GitHubConfigContributor`                | Shared load-and-inject logic + double-load guard        |
+| `GitHubConfigLoadingCoordinator`         | Coordinates both stages: shared load-and-inject logic + double-load guard |
 | `GitHubConfigLoader`                     | Fetches raw files over the GitHub API and parses them   |
 | `GitHubConfigProperties`                 | Resolved, immutable settings record                     |
 | `GitHubConfigException`                  | Raised on fetch/parse failures                          |
