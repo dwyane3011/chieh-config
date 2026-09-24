@@ -1,0 +1,45 @@
+# ---- Maven / build output ----
+target/
+*.class
+build/
+dist/
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+
+# ---- Logs ----
+*.log
+*.log.gz
+*.log.*
+logs/
+
+# ---- IDE: IntelliJ IDEA ----
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# ---- IDE: Eclipse ----
+.classpath
+.project
+.settings/
+.factorypath
+
+# ---- IDE: VS Code ----
+.vscode/
+
+# ---- OS files ----
+.DS_Store
+Thumbs.db
+
+# ---- Secrets: never commit GitHub tokens or local overrides ----
+# The client reads its token from an env var (CHIEH_CONFIG_GITHUB_TOKEN);
+# these patterns guard against accidentally committing local secret files.
+*.env
+.env
+.env.*
+secrets.properties
+application-local.properties
+application-local.yml
+application-secret.yml

@@ -109,7 +109,8 @@ chieh:
       paths: common.properties,services/order-service.properties
       ref: main
       fail-fast: true
-      eager: false
+      eagerLoad:
+        enabled: false
 ```
 
 ---
@@ -141,12 +142,12 @@ automatically. The token needs only **Contents: Read-only** on the target reposi
 ## Eager vs lazy loading
 
 Loading happens in two stages (the same pattern Apollo uses), selected by
-`chieh.config.github.eager` (default **`false`**):
+`chieh.config.github.eagerLoad.enabled` (default **`false`**):
 
-| Mode  | `eager`           | When it loads                                                                       | `logback-spring.xml` sees remote values? |
-|-------|-------------------|-------------------------------------------------------------------------------------|-------------------------------------------|
-| Lazy  | `false` (default) | On `ApplicationPreparedEvent`, **after** the logging system initialises             | No  |
-| Eager | `true`            | In an `EnvironmentPostProcessor`, right after `application.yml`, **before Logback** | Yes |
+| Mode  | `eagerLoad.enabled` | When it loads                                                                       | `logback-spring.xml` sees remote values? |
+|-------|---------------------|-------------------------------------------------------------------------------------|-------------------------------------------|
+| Lazy  | `false` (default)   | On `ApplicationPreparedEvent`, **after** the logging system initialises             | No  |
+| Eager | `true`              | In an `EnvironmentPostProcessor`, right after `application.yml`, **before Logback** | Yes |
 
 - **Eager** — `GitHubConfigEnvironmentPostProcessor` runs early (right after
   `ConfigDataEnvironmentPostProcessor`, so `application.yml` is available) and loads
@@ -160,12 +161,22 @@ Either way the config lands in the `Environment` before beans are created, so
 `@Value` / `@ConfigurationProperties` always see it — only Logback's own
 configuration differs between the modes.
 
-Set the switch in `application.yml`, or override per run:
+Set the switch in `application.yml`:
+
+```yaml
+chieh:
+  config:
+    github:
+      eagerLoad:
+        enabled: true
+```
+
+Or override per run:
 
 ```bash
--Dchieh.config.github.eager=true          # JVM system property
-export CHIEH_CONFIG_GITHUB_EAGER=true     # bash
-$env:CHIEH_CONFIG_GITHUB_EAGER = "true"   # PowerShell
+-Dchieh.config.github.eagerLoad.enabled=true       # JVM system property
+export CHIEH_CONFIG_GITHUB_EAGERLOAD_ENABLED=true  # bash
+$env:CHIEH_CONFIG_GITHUB_EAGERLOAD_ENABLED = "true"  # PowerShell
 ```
 
 The startup log shows which stage ran, e.g.

@@ -25,8 +25,8 @@ import org.springframework.core.env.PropertySource;
  *
  * <p>A marker property is written to the environment after a successful (or
  * deliberately skipped) contribution so the two stages never load twice. This
- * mirrors Apollo's approach of reading its {@code eagerLoad} switch from the
- * environment and choosing when to inject.
+ * mirrors Apollo's approach of reading its {@code apollo.bootstrap.eagerLoad.enabled}
+ * switch from the environment and choosing when to inject.
  */
 public final class GitHubConfigLoadingCoordinator {
 
@@ -34,9 +34,13 @@ public final class GitHubConfigLoadingCoordinator {
      * Switch selecting eager (pre-Logback) loading. Unlike ordering-based
      * approaches, this is read from the {@link ConfigurableEnvironment} inside a
      * post-processor method, so it may live in {@code application.yml}. A system
-     * property or {@code CHIEH_CONFIG_GITHUB_EAGER} env var still overrides it.
+     * property or {@code CHIEH_CONFIG_GITHUB_EAGERLOAD_ENABLED} env var still
+     * overrides it. Named after Apollo's {@code apollo.bootstrap.eagerLoad.enabled}.
      */
-    public static final String EAGER_PROPERTY = GitHubConfigProperties.PREFIX + ".eager";
+    public static final String EAGER_PROPERTY = GitHubConfigProperties.PREFIX + ".eagerLoad.enabled";
+
+    /** Environment variable that overrides {@link #EAGER_PROPERTY}. */
+    private static final String EAGER_ENV = "CHIEH_CONFIG_GITHUB_EAGERLOAD_ENABLED";
 
     /** Marker set once a stage has handled loading, to prevent double loading. */
     private static final String LOADED_MARKER = GitHubConfigProperties.PREFIX + ".loaded";
@@ -95,14 +99,15 @@ public final class GitHubConfigLoadingCoordinator {
     }
 
     /**
-     * Resolves whether eager mode is on. Precedence: system property, then
-     * {@code CHIEH_CONFIG_GITHUB_EAGER} env var, then the environment (which
-     * includes {@code application.yml}). Defaults to {@code false}.
+     * Resolves whether eager mode is on. Precedence: system property
+     * ({@link #EAGER_PROPERTY}), then the {@code CHIEH_CONFIG_GITHUB_EAGERLOAD_ENABLED}
+     * env var, then the environment (which includes {@code application.yml}).
+     * Defaults to {@code false}.
      */
     public static boolean isEagerEnabled(ConfigurableEnvironment environment) {
         String override = System.getProperty(EAGER_PROPERTY);
         if (override == null) {
-            override = System.getenv("CHIEH_CONFIG_GITHUB_EAGER");
+            override = System.getenv(EAGER_ENV);
         }
         if (override != null) {
             return Boolean.parseBoolean(override);

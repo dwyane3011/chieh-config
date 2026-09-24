@@ -16,8 +16,9 @@ import org.springframework.core.env.ConfigurableEnvironment;
  * is loaded and the {@code chieh.config.github.*} switches can be read — but
  * <em>before</em> the logging system initialises.
  *
- * <p>Whether it actually loads here depends on the {@code chieh.config.github.eager}
- * switch (read from the environment, so it may live in {@code application.yml}):
+ * <p>Whether it actually loads here depends on the
+ * {@code chieh.config.github.eagerLoad.enabled} switch (read from the
+ * environment, so it may live in {@code application.yml}):
  * <ul>
  *   <li><b>eager = true</b>: load now, before Logback initialises, so
  *       {@code logback-spring.xml} can reference GitHub-sourced values via

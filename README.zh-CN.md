@@ -107,7 +107,8 @@ chieh:
       paths: common.properties,services/order-service.properties
       ref: main
       fail-fast: true
-      eager: false
+      eagerLoad:
+        enabled: false
 ```
 
 ---
@@ -136,13 +137,13 @@ Spring 的宽松绑定会自动把 `CHIEH_CONFIG_GITHUB_TOKEN` 映射到 `chieh.
 
 ## 饥饿加载 vs 懒加载
 
-加载分两个阶段完成（和 Apollo 采用的模式相同），由 `chieh.config.github.eager` 选择
-（默认 **`false`**）：
+加载分两个阶段完成（和 Apollo 采用的模式相同），由 `chieh.config.github.eagerLoad.enabled`
+选择（默认 **`false`**）：
 
-| 模式  | `eager`         | 加载时机                                                                | `logback-spring.xml` 能读到远程值？ |
-|-------|-----------------|-------------------------------------------------------------------------|-------------------------------------|
-| 懒加载 | `false`（默认） | 在 `ApplicationPreparedEvent` 时，**晚于**日志系统初始化                  | 否 |
-| 饥饿   | `true`          | 在 `EnvironmentPostProcessor` 中，`application.yml` 之后、**Logback 之前** | 是 |
+| 模式  | `eagerLoad.enabled` | 加载时机                                                                | `logback-spring.xml` 能读到远程值？ |
+|-------|---------------------|-------------------------------------------------------------------------|-------------------------------------|
+| 懒加载 | `false`（默认）     | 在 `ApplicationPreparedEvent` 时，**晚于**日志系统初始化                  | 否 |
+| 饥饿   | `true`              | 在 `EnvironmentPostProcessor` 中，`application.yml` 之后、**Logback 之前** | 是 |
 
 - **饥饿** —— `GitHubConfigEnvironmentPostProcessor` 很早运行（紧跟
   `ConfigDataEnvironmentPostProcessor` 之后，此时 `application.yml` 已可用），并在 Logback
@@ -154,12 +155,22 @@ Spring 的宽松绑定会自动把 `CHIEH_CONFIG_GITHUB_TOKEN` 映射到 `chieh.
 无论哪种模式，配置都在 bean 创建之前进入 `Environment`，因此 `@Value` /
 `@ConfigurationProperties` 始终能读到 —— 两种模式的唯一区别在于 Logback 自身的配置能否读到。
 
-在 `application.yml` 中设置该开关，或按次运行覆盖：
+在 `application.yml` 中设置该开关：
+
+```yaml
+chieh:
+  config:
+    github:
+      eagerLoad:
+        enabled: true
+```
+
+或按次运行覆盖：
 
 ```bash
--Dchieh.config.github.eager=true          # JVM 系统属性
-export CHIEH_CONFIG_GITHUB_EAGER=true     # bash
-$env:CHIEH_CONFIG_GITHUB_EAGER = "true"   # PowerShell
+-Dchieh.config.github.eagerLoad.enabled=true       # JVM 系统属性
+export CHIEH_CONFIG_GITHUB_EAGERLOAD_ENABLED=true  # bash
+$env:CHIEH_CONFIG_GITHUB_EAGERLOAD_ENABLED = "true"  # PowerShell
 ```
 
 启动日志会显示实际运行的是哪个阶段，例如
