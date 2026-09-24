@@ -1,0 +1,7 @@
+com\chieh\config\client\github\GitHubConfigLoadingCoordinator.class
+com\chieh\config\client\github\GitHubConfigProperties.class
+com\chieh\config\client\github\GitHubConfigException.class
+com\chieh\config\client\annotation\EnableChiehConfig.class
+com\chieh\config\client\github\GitHubConfigLoader.class
+com\chieh\config\client\github\GitHubConfigEnvironmentPostProcessor.class
+com\chieh\config\client\github\GitHubConfigApplicationListener.class

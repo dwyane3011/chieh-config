@@ -1,31 +1,82 @@
-package com.chieh.config.client.github;
+package com.chieh.config.client.annotation;
 
-import java.util.List;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Resolved settings describing which GitHub files to load configuration from.
+ * Enables the chieh-config client in a Spring Boot service.
  *
- * <p>Instances are built by combining {@code @EnableChiehConfig} attributes with
- * matching {@code chieh.config.github.*} properties, where properties win.
- * Only {@code .properties} files are supported; {@link #paths()} may list
- * several, loaded in order with later files overriding earlier ones.
+ * <p>When present on the application's main class, configuration is fetched
+ * from a GitHub repository at startup (before the application context refreshes)
+ * and exposed as regular Spring properties, so it can be consumed via
+ * {@code @Value}, {@code @ConfigurationProperties}, or {@code Environment}.
+ *
+ * <p>Only {@code .properties} files are supported. Multiple files may be
+ * listed; they are loaded in order and later files override earlier ones.
+ *
+ * <pre>{@code
+ * @EnableChiehConfig(
+ *     repo  = "my-org/my-config-repo",
+ *     paths = { "common.properties", "services/order-service.properties" },
+ *     ref   = "main")
+ * @SpringBootApplication
+ * public class OrderServiceApplication {
+ *     public static void main(String[] args) {
+ *         SpringApplication.run(OrderServiceApplication.class, args);
+ *     }
+ * }
+ * }</pre>
+ *
+ * <p>Every attribute can also be supplied (or overridden) through Spring
+ * properties under the {@code chieh.config.github.*} prefix, which is handy for
+ * environment-specific values such as the access token. Annotation attributes
+ * act as defaults; matching properties in the environment take precedence.
  */
-public record GitHubConfigProperties(
-        String repo,
-        List<String> paths,
-        String ref,
-        String token,
-        boolean failFast) {
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+public @interface EnableChiehConfig {
 
-    /** Property prefix used to override annotation attributes. */
-    public static final String PREFIX = "chieh.config.github";
+    /**
+     * GitHub repository in {@code owner/name} form, e.g. {@code my-org/config}.
+     * May be overridden by property {@code chieh.config.github.repo}.
+     */
+    String repo() default "";
 
-    public boolean hasToken() {
-        return token != null && !token.isBlank();
-    }
+    /**
+     * Paths to the {@code .properties} config files within the repository,
+     * e.g. {@code {"common.properties", "services/order-service.properties"}}.
+     * Files are loaded in the order listed and later files override earlier
+     * ones. Only {@code .properties} files are supported.
+     * May be overridden by property {@code chieh.config.github.paths} (a
+     * comma-separated list).
+     */
+    String[] paths() default {};
 
-    public boolean isConfigured() {
-        return repo != null && !repo.isBlank()
-                && paths != null && !paths.isEmpty();
-    }
+    /**
+     * Git ref (branch, tag, or commit SHA) to read from. Defaults to
+     * {@code main}. May be overridden by property {@code chieh.config.github.ref}.
+     */
+    String ref() default "main";
+
+    /**
+     * Name of the environment property that holds a GitHub personal access
+     * token, used for private repositories and higher rate limits. Defaults to
+     * {@code chieh.config.github.token}. The token itself should be supplied via
+     * an environment variable or JVM property, never hard-coded.
+     */
+    String tokenProperty() default "chieh.config.github.token";
+
+    /**
+     * Whether startup should fail if a config file cannot be fetched or
+     * parsed. When {@code false}, loading errors are logged and startup
+     * continues without the remote config. Defaults to {@code true}.
+     * May be overridden by property {@code chieh.config.github.fail-fast}.
+     */
+    boolean failFast() default true;
 }
